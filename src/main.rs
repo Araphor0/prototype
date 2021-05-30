@@ -26,5 +26,5 @@ uuid = { version = "0.3.1", features = ["v4"] }
 */
 
 fn main() {
-    println!("Hello, world!");
+    println!("Keep building!");
 }
