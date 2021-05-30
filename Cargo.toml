@@ -17,3 +17,7 @@ time = "0.2.26"
 [dependencies.chrono]
 version = "0.2.25"
 features = ["serde"]
+
+[dependencies.uuid]
+version = "0.3.1"
+features = ["serde"]
