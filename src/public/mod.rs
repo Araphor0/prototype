@@ -11,9 +11,9 @@ use super::Side;
 const PUBLIC_API_URL: &'static str = "https://api.gdax.com";
 
 pub enum Level {
-    Best    = 1,
-    Top50   = 2,
-    Full    = 3
+    Best = 1,
+    Top50 = 2,
+    Full = 3,
 }
 
 #[derive(Deserialize, Debug)]
@@ -23,28 +23,28 @@ pub struct Product {
     pub quote_currency: String,
     pub base_min_size: f64,
     pub base_max_size: f64,
-    pub quote_increment: f64
+    pub quote_increment: f64,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct BookEntry {
     pub price: f64,
     pub size: f64,
-    pub num_orders: u64
+    pub num_orders: u64,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct FullBookEntry {
     pub price: f64,
     pub size: f64,
-    pub order_id: Uuid
+    pub order_id: Uuid,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct OrderBook<T> {
     pub sequence: usize,
     pub bids: Vec<T>,
-    pub asks: Vec<T>
+    pub asks: Vec<T>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -55,7 +55,7 @@ pub struct Tick {
     pub bid: f64,
     pub ask: f64,
     pub volume: f64,
-    pub time: DateTime<UTC>
+    pub time: DateTime<UTC>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -74,7 +74,7 @@ pub struct Candle {
     pub high: f64,
     pub open: f64,
     pub close: f64,
-    pub volume: f64
+    pub volume: f64,
 }
 
 #[derive(Deserialize, Debug)]
@@ -82,20 +82,20 @@ pub struct Stats {
     pub open: f64,
     pub high: f64,
     pub low: f64,
-    pub volume: f64
+    pub volume: f64,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct Currency {
     pub id: String,
     pub name: String,
-    pub min_size: f64
+    pub min_size: f64,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct Time {
     pub iso: DateTime<UTC>,
-    pub epoch: f64
+    pub epoch: f64,
 }
 
 pub struct Client {
@@ -105,17 +105,19 @@ pub struct Client {
 impl Client {
     pub fn new() -> Client {
         Client {
-            http_client: HttpClient::new()
+            http_client: HttpClient::new(),
         }
     }
 
     fn get_and_decode<T>(&self, url: &str) -> Result<T, Error>
-        where T: Deserialize
+    where
+        T: Deserialize,
     {
-
-        let mut res = self.http_client.get(url)
-                                      .header(UserAgent("rust-gdax-client/0.1.0".to_owned()))
-                                      .send()?;
+        let mut res = self
+            .http_client
+            .get(url)
+            .header(UserAgent("rust-gdax-client/0.1.0".to_owned()))
+            .send()?;
 
         if !res.status.is_success() {
             return Err(Error::Api(de::from_reader(&mut res)?));
@@ -129,24 +131,30 @@ impl Client {
     }
 
     pub fn get_best_order(&self, product: &str) -> Result<OrderBook<BookEntry>, Error> {
-        self.get_and_decode(&format!("{}/products/{}/book?level={}",
-                                     PUBLIC_API_URL,
-                                     product,
-                                     Level::Best as u8))
+        self.get_and_decode(&format!(
+            "{}/products/{}/book?level={}",
+            PUBLIC_API_URL,
+            product,
+            Level::Best as u8
+        ))
     }
 
     pub fn get_top50_orders(&self, product: &str) -> Result<OrderBook<BookEntry>, Error> {
-        self.get_and_decode(&format!("{}/products/{}/book?level={}",
-                                     PUBLIC_API_URL,
-                                     product,
-                                     Level::Top50 as u8))
+        self.get_and_decode(&format!(
+            "{}/products/{}/book?level={}",
+            PUBLIC_API_URL,
+            product,
+            Level::Top50 as u8
+        ))
     }
 
     pub fn get_full_book(&self, product: &str) -> Result<OrderBook<FullBookEntry>, Error> {
-        self.get_and_decode(&format!("{}/products/{}/book?level={}",
-                                     PUBLIC_API_URL,
-                                     product,
-                                     Level::Full as u8))
+        self.get_and_decode(&format!(
+            "{}/products/{}/book?level={}",
+            PUBLIC_API_URL,
+            product,
+            Level::Full as u8
+        ))
     }
 
     pub fn get_product_ticker(&self, product: &str) -> Result<Tick, Error> {
@@ -158,19 +166,21 @@ impl Client {
     }
 
     // XXX: Returns invalid interval?
-    pub fn get_historic_rates(&self,
-                              product: &str,
-                              start_time: DateTime<UTC>,
-                              end_time: DateTime<UTC>,
-                              granularity: u64)
-        -> Result<Vec<Candle>, Error> {
-
-        self.get_and_decode(&format!("{}/products/{}/candles?start={}&end={}&granularity={}",
-                                     PUBLIC_API_URL,
-                                     product,
-                                     start_time.to_rfc3339(),
-                                     end_time.to_rfc3339(),
-                                     granularity))
+    pub fn get_historic_rates(
+        &self,
+        product: &str,
+        start_time: DateTime<UTC>,
+        end_time: DateTime<UTC>,
+        granularity: u64,
+    ) -> Result<Vec<Candle>, Error> {
+        self.get_and_decode(&format!(
+            "{}/products/{}/candles?start={}&end={}&granularity={}",
+            PUBLIC_API_URL,
+            product,
+            start_time.to_rfc3339(),
+            end_time.to_rfc3339(),
+            granularity
+        ))
     }
 
     pub fn get_24hr_stats(&self, product: &str) -> Result<Stats, Error> {

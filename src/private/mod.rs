@@ -4,8 +4,8 @@ use crypto::hmac::Hmac;
 use crypto::mac::Mac;
 use crypto::sha2::Sha256;
 use hyper::client::Client as HttpClient;
-use hyper::header::{Accept, ContentType, Headers, qitem, UserAgent};
-use hyper::mime::{Mime, TopLevel, SubLevel};
+use hyper::header::{qitem, Accept, ContentType, Headers, UserAgent};
+use hyper::mime::{Mime, SubLevel, TopLevel};
 use serde::{self, Deserialize, Serialize};
 use serde_json::{de, ser};
 use std::ops::Deref;
@@ -22,7 +22,7 @@ pub struct Client {
     http_client: HttpClient,
     key: String,
     secret: String,
-    passphrase: String
+    passphrase: String,
 }
 
 #[derive(Deserialize, Debug)]
@@ -31,7 +31,7 @@ pub struct Account {
     pub balance: f64,
     pub hold: f64,
     pub available: f64,
-    pub currency: String
+    pub currency: String,
 }
 
 pub type Ledger = Vec<LedgerEntry>;
@@ -44,7 +44,7 @@ pub struct LedgerEntry {
     pub balance: f64,
     #[serde(rename = "type")]
     pub entry_type: EntryType,
-    pub details: Option<EntryDetails>
+    pub details: Option<EntryDetails>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -53,14 +53,14 @@ pub struct EntryDetails {
     pub trade_id: Option<u64>,
     pub product_id: Option<String>,
     pub transfer_id: Option<Uuid>,
-    pub transfer_type: Option<String>
+    pub transfer_type: Option<String>,
 }
 
 #[derive(Debug)]
 pub enum EntryType {
     Fee,
     Match,
-    Transfer
+    Transfer,
 }
 
 // We manually implement Deserialize for EntryType here
@@ -68,19 +68,24 @@ pub enum EntryType {
 // gives us isn't the straightforward mapping unfortunately
 impl serde::Deserialize for EntryType {
     fn deserialize<D>(deserializer: &mut D) -> Result<EntryType, D::Error>
-        where D: serde::Deserializer {
-
+    where
+        D: serde::Deserializer,
+    {
         struct EntryTypeVisitor;
         impl serde::de::Visitor for EntryTypeVisitor {
             type Value = EntryType;
 
             fn visit_str<E>(&mut self, v: &str) -> Result<Self::Value, E>
-                where E: serde::Error {
+            where
+                E: serde::Error,
+            {
                 match &*v.to_lowercase() {
                     "fee" => Ok(EntryType::Fee),
                     "match" => Ok(EntryType::Match),
                     "transfer" => Ok(EntryType::Transfer),
-                    _ => Err(E::invalid_value("entry type must be either `fee`, `match` or `transfer`"))
+                    _ => Err(E::invalid_value(
+                        "entry type must be either `fee`, `match` or `transfer`",
+                    )),
                 }
             }
         }
@@ -98,13 +103,13 @@ pub struct Hold {
     #[serde(rename = "type")]
     pub hold_type: HoldType,
     #[serde(rename = "ref")]
-    pub ref_id: Uuid
+    pub ref_id: Uuid,
 }
 
 #[derive(Debug)]
 pub enum HoldType {
     Order,
-    Transfer
+    Transfer,
 }
 
 // We manually implement Deserialize for HoldType here
@@ -112,18 +117,23 @@ pub enum HoldType {
 // gives us isn't the straightforward mapping unfortunately
 impl serde::Deserialize for HoldType {
     fn deserialize<D>(deserializer: &mut D) -> Result<HoldType, D::Error>
-        where D: serde::Deserializer {
-
+    where
+        D: serde::Deserializer,
+    {
         struct HoldTypeVisitor;
         impl serde::de::Visitor for HoldTypeVisitor {
             type Value = HoldType;
 
             fn visit_str<E>(&mut self, v: &str) -> Result<Self::Value, E>
-                where E: serde::Error {
+            where
+                E: serde::Error,
+            {
                 match &*v.to_lowercase() {
                     "order" => Ok(HoldType::Order),
                     "transfer" => Ok(HoldType::Transfer),
-                    _ => Err(E::invalid_value("hold type must be either `order` or `transfer`"))
+                    _ => Err(E::invalid_value(
+                        "hold type must be either `order` or `transfer`",
+                    )),
                 }
             }
         }
@@ -136,7 +146,7 @@ pub type OrderId = Uuid;
 #[derive(Clone, Copy, Debug)]
 pub enum SizeOrFunds {
     Size(f64),
-    Funds(f64)
+    Funds(f64),
 }
 
 #[derive(Debug)]
@@ -145,7 +155,7 @@ pub enum NewOrder {
         side: Side,
         product_id: String,
         price: f64,
-        size: f64
+        size: f64,
     },
     Market {
         side: Side,
@@ -156,8 +166,8 @@ pub enum NewOrder {
         side: Side,
         product_id: String,
         price: f64,
-        size_or_funds: SizeOrFunds
-    }
+        size_or_funds: SizeOrFunds,
+    },
 }
 
 impl NewOrder {
@@ -166,7 +176,7 @@ impl NewOrder {
             side: side,
             product_id: product_id.to_owned(),
             price: price,
-            size: size
+            size: size,
         }
     }
 
@@ -174,7 +184,7 @@ impl NewOrder {
         NewOrder::Market {
             side: side,
             product_id: product_id.to_owned(),
-            size_or_funds: size_or_funds
+            size_or_funds: size_or_funds,
         }
     }
 
@@ -183,7 +193,7 @@ impl NewOrder {
             side: side,
             product_id: product_id.to_owned(),
             size_or_funds: size_or_funds,
-            price: price
+            price: price,
         }
     }
 }
@@ -192,10 +202,16 @@ impl NewOrder {
 // each variant needs to be encoded slightly differently
 impl Serialize for NewOrder {
     fn serialize<S>(&self, serializer: &mut S) -> Result<(), S::Error>
-        where S: serde::Serializer
+    where
+        S: serde::Serializer,
     {
         match *self {
-            NewOrder::Limit { side, ref product_id, price, size } => {
+            NewOrder::Limit {
+                side,
+                ref product_id,
+                price,
+                size,
+            } => {
                 // We create a struct representing the JSON
                 // and have Serialize auto derived for that
                 #[derive(Serialize)]
@@ -205,52 +221,68 @@ impl Serialize for NewOrder {
                     side: Side,
                     product_id: &'a str,
                     price: f64,
-                    size: f64
+                    size: f64,
                 }
                 LimitOrder {
                     t: "limit",
                     side: side,
                     product_id: product_id,
                     price: price,
-                    size: size
-                }.serialize(serializer)
+                    size: size,
+                }
+                .serialize(serializer)
             }
 
-            NewOrder::Market { side, ref product_id, size_or_funds: SizeOrFunds::Size(size) } => {
+            NewOrder::Market {
+                side,
+                ref product_id,
+                size_or_funds: SizeOrFunds::Size(size),
+            } => {
                 #[derive(Serialize)]
                 struct MarketOrder<'a> {
                     #[serde(rename = "type")]
                     t: &'static str,
                     side: Side,
                     product_id: &'a str,
-                    size: f64
+                    size: f64,
                 }
                 MarketOrder {
                     t: "market",
                     side: side,
                     product_id: product_id,
-                    size: size
-                }.serialize(serializer)
+                    size: size,
+                }
+                .serialize(serializer)
             }
 
-            NewOrder::Market { side, ref product_id, size_or_funds: SizeOrFunds::Funds(funds) } => {
+            NewOrder::Market {
+                side,
+                ref product_id,
+                size_or_funds: SizeOrFunds::Funds(funds),
+            } => {
                 #[derive(Serialize)]
                 struct MarketOrder<'a> {
                     #[serde(rename = "type")]
                     t: &'static str,
                     side: Side,
                     product_id: &'a str,
-                    funds: f64
+                    funds: f64,
                 }
                 MarketOrder {
                     t: "market",
                     side: side,
                     product_id: product_id,
-                    funds: funds
-                }.serialize(serializer)
+                    funds: funds,
+                }
+                .serialize(serializer)
             }
 
-            NewOrder::Stop { side, ref product_id, price, size_or_funds: SizeOrFunds::Size(size) } => {
+            NewOrder::Stop {
+                side,
+                ref product_id,
+                price,
+                size_or_funds: SizeOrFunds::Size(size),
+            } => {
                 #[derive(Serialize)]
                 struct StopOrder<'a> {
                     #[serde(rename = "type")]
@@ -258,18 +290,24 @@ impl Serialize for NewOrder {
                     side: Side,
                     product_id: &'a str,
                     price: f64,
-                    size: f64
+                    size: f64,
                 }
                 StopOrder {
                     t: "stop",
                     side: side,
                     product_id: product_id,
                     price: price,
-                    size: size
-                }.serialize(serializer)
+                    size: size,
+                }
+                .serialize(serializer)
             }
 
-            NewOrder::Stop { side, ref product_id, price, size_or_funds: SizeOrFunds::Funds(funds) } => {
+            NewOrder::Stop {
+                side,
+                ref product_id,
+                price,
+                size_or_funds: SizeOrFunds::Funds(funds),
+            } => {
                 #[derive(Serialize)]
                 struct StopOrder<'a> {
                     #[serde(rename = "type")]
@@ -277,15 +315,16 @@ impl Serialize for NewOrder {
                     side: Side,
                     product_id: &'a str,
                     price: f64,
-                    funds: f64
+                    funds: f64,
                 }
                 StopOrder {
                     t: "stop",
                     side: side,
                     product_id: product_id,
                     price: price,
-                    funds: funds
-                }.serialize(serializer)
+                    funds: funds,
+                }
+                .serialize(serializer)
             }
         }
     }
@@ -303,7 +342,7 @@ pub struct OpenOrder {
     pub fill_fees: f64,
     pub settled: bool,
     pub side: Side,
-    pub created_at: DateTime<UTC>
+    pub created_at: DateTime<UTC>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -320,7 +359,7 @@ pub struct Order {
     pub fill_fees: f64,
     pub side: Side,
     pub created_at: DateTime<UTC>,
-    pub done_at: Option<DateTime<UTC>>
+    pub done_at: Option<DateTime<UTC>>,
 }
 
 impl Client {
@@ -330,19 +369,19 @@ impl Client {
             http_client: HttpClient::new(),
             key: key.to_owned(),
             secret: secret.to_owned(),
-            passphrase: passphrase.to_owned()
+            passphrase: passphrase.to_owned(),
         }
     }
 
-    fn signature(&self, path: &str, body: &str, timestamp: &str, method: &str)
-        -> Result<String, Error> {
-
+    fn signature(
+        &self,
+        path: &str,
+        body: &str,
+        timestamp: &str,
+        method: &str,
+    ) -> Result<String, Error> {
         let key = base64::decode(&self.secret)?;
-        let what = format!("{}{}{}{}",
-                           timestamp,
-                           method.to_uppercase(),
-                           path,
-                           body);
+        let what = format!("{}{}{}{}", timestamp, method.to_uppercase(), path, body);
 
         let mut hmac = Hmac::new(Sha256::new(), &key);
         hmac.input(what.as_bytes());
@@ -355,24 +394,30 @@ impl Client {
         let signature = self.signature(path, body, &timestamp, method)?;
 
         let mut headers = Headers::new();
-        headers.set(Accept(vec![qitem(Mime(TopLevel::Application, SubLevel::Json, vec![]))]));
+        headers.set(Accept(vec![qitem(Mime(
+            TopLevel::Application,
+            SubLevel::Json,
+            vec![],
+        ))]));
         headers.set(UserAgent("rust-gdax-client/0.1.0".to_owned()));
         headers.set_raw("CB-ACCESS-KEY", vec![self.key.clone().into_bytes()]);
         headers.set_raw("CB-ACCESS-SIGN", vec![signature.into_bytes()]);
-        headers.set_raw("CB-ACCESS-PASSPHRASE", vec![self.passphrase.clone().into_bytes()]);
+        headers.set_raw(
+            "CB-ACCESS-PASSPHRASE",
+            vec![self.passphrase.clone().into_bytes()],
+        );
         headers.set_raw("CB-ACCESS-TIMESTAMP", vec![timestamp.into_bytes()]);
 
         Ok(headers)
     }
 
     fn get_and_decode<T>(&self, path: &str) -> Result<T, Error>
-        where T: Deserialize
+    where
+        T: Deserialize,
     {
         let headers = self.get_headers(path, "", "GET")?;
         let url = format!("{}{}", PRIVATE_API_URL, path);
-        let mut res = self.http_client.get(&url)
-                                      .headers(headers)
-                                      .send()?;
+        let mut res = self.http_client.get(&url).headers(headers).send()?;
 
         if !res.status.is_success() {
             return Err(Error::Api(de::from_reader(&mut res)?));
@@ -382,15 +427,18 @@ impl Client {
     }
 
     fn post_and_decode<T>(&self, path: &str, body: &str) -> Result<T, Error>
-        where T: Deserialize
+    where
+        T: Deserialize,
     {
         let headers = self.get_headers(path, body, "POST")?;
         let url = format!("{}{}", PRIVATE_API_URL, path);
-        let mut res = self.http_client.post(&url)
-                                      .headers(headers)
-                                      .header(ContentType::json())
-                                      .body(body)
-                                      .send()?;
+        let mut res = self
+            .http_client
+            .post(&url)
+            .headers(headers)
+            .header(ContentType::json())
+            .body(body)
+            .send()?;
 
         if !res.status.is_success() {
             return Err(Error::Api(de::from_reader(&mut res)?));
@@ -400,13 +448,12 @@ impl Client {
     }
 
     fn delete_and_decode<T>(&self, path: &str) -> Result<T, Error>
-        where T: Deserialize
+    where
+        T: Deserialize,
     {
         let headers = self.get_headers(path, "", "DELETE")?;
         let url = format!("{}{}", PRIVATE_API_URL, path);
-        let mut res = self.http_client.delete(&url)
-                                      .headers(headers)
-                                      .send()?;
+        let mut res = self.http_client.delete(&url).headers(headers).send()?;
 
         if !res.status.is_success() {
             return Err(Error::Api(de::from_reader(&mut res)?));
@@ -433,7 +480,9 @@ impl Client {
 
     pub fn post_order(&self, order: &NewOrder) -> Result<OrderId, Error> {
         #[derive(Deserialize)]
-        struct NewOrderResult { id: OrderId }
+        struct NewOrderResult {
+            id: OrderId,
+        }
 
         let body = ser::to_string(order)?;
         Ok(self.post_and_decode::<NewOrderResult>("/orders", &body)?.id)
@@ -451,18 +500,19 @@ impl Client {
         }
     }
 
-    pub fn get_orders_with_status(&self,
-                                  open: bool,
-                                  pending: bool,
-                                  active: bool)
-        -> Result<Vec<OpenOrder>, Error>
-    {
-        let status = [open, pending, active].iter()
-                                            .zip(["status=open", "status=pending", "status=active"].iter())
-                                            .filter(|&(&flag, _)| flag)
-                                            .map(|(_, &s)| s)
-                                            .collect::<Vec<_>>()
-                                            .join("&");
+    pub fn get_orders_with_status(
+        &self,
+        open: bool,
+        pending: bool,
+        active: bool,
+    ) -> Result<Vec<OpenOrder>, Error> {
+        let status = [open, pending, active]
+            .iter()
+            .zip(["status=open", "status=pending", "status=active"].iter())
+            .filter(|&(&flag, _)| flag)
+            .map(|(_, &s)| s)
+            .collect::<Vec<_>>()
+            .join("&");
         self.get_and_decode(&format!("/orders?{}", status))
     }
 
