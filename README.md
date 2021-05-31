@@ -42,7 +42,7 @@ the server.
 Coinbase Pro operates a continuous first-come, first-serve order book.
 Orders are executed in price-time priority as received by the matching engine.
 
-Therefor by hosting the bot closest to the exchange as well as using a language that
+Therefore by hosting the bot closest to the exchange as well as using a language that
 is memory-safe and concurrent. The bot can trade without any fuss and latency.
 
 ## References
