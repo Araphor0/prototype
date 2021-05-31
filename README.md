@@ -33,7 +33,7 @@ familar with C++ and do not want to waste time re-writing the code in Rust.
 ## How will this bot be hosted?
 
 Coinbase Pro data centers are in the Amazon US East N. Virginia (us-east-1) region.
-Using a Virtual Private server in AWS, I can located the server in the us-east-1
+Using a Virtual Private server in AWS, I can locate the server in the us-east-1
 region. 
 
 As a result of the server location, this reduces latency to and from the exchange and
@@ -45,3 +45,11 @@ Orders are executed in price-time priority as received by the matching engine.
 Therefor by hosting the bot closest to the exchange as well as using a language that
 is memory-safe and concurrent. The bot can trade without any fuss and latency.
 
+## References
+
+Benchmark games:
+Rust vs C++: https://benchmarksgame-team.pages.debian.net/benchmarksgame/fastest/rust-gpp.html
+Rust vs Go: https://benchmarksgame-team.pages.debian.net/benchmarksgame/fastest/rust-go.html
+
+Why Discord is switching from Go to Rust:
+https://blog.discord.com/why-discord-is-switching-from-go-to-rust-a190bbca2b1f
