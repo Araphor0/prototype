@@ -49,9 +49,9 @@ is memory-safe and concurrent. The bot can trade without any fuss and latency.
 
 Benchmark games:
 Rust vs C++:
- https://benchmarksgame-team.pages.debian.net/benchmarksgame/fastest/rust-gpp.html
+https://benchmarksgame-team.pages.debian.net/benchmarksgame/fastest/rust-gpp.html
 Rust vs Go:
- https://benchmarksgame-team.pages.debian.net/benchmarksgame/fastest/rust-go.html
+https://benchmarksgame-team.pages.debian.net/benchmarksgame/fastest/rust-go.html
 
 Why Discord is switching from Go to Rust:
 https://blog.discord.com/why-discord-is-switching-from-go-to-rust-a190bbca2b1f
