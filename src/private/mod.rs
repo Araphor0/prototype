@@ -15,7 +15,12 @@ use uuid::Uuid;
 use super::Error;
 use super::Side;
 
+//You are going to replace this URL with the sandbox URL.
+// https://public.sandbox.pro.coinbase.com
 const PRIVATE_API_URL: &'static str = "https://api.gdax.com";
+
+//Actual REST API
+//https://api.pro.coinbase.com
 
 pub struct Client {
     public_client: super::public::Client,
