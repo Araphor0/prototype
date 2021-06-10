@@ -11,17 +11,17 @@ use keys::{key, passphrase, secret};
 fn main() {
     let client: Private<Sync> = Private::new(SANDBOX_URL, key(), secret(), passphrase());
     println!("Keep building!");
+    let accounts = client.get_accounts().unwrap();
 
-    /* Example code of what a buy and sell market order would consist of in code. */
-    //client.buy_market_funds("ETH-GBP", 10.0).expect("Could not buy market funds");
-    //client.sell_market_funds("ETH-GBP", 10.11).expect("Could not sell market");
+    println!("Great British Pound: ");
+    let gbp = accounts.iter().find(|x| x.currency == "GBP").unwrap();
+    println!("{}.  balance: {:?}", gbp.currency, gbp.balance);
+    println!("{}.available: {:?}", gbp.currency, gbp.available);
+    println!("{}.     hold: {:?}", gbp.currency, gbp.hold);
 
-    loop {
-        client
-            .buy_market_funds("ETH-GBP", 10.0)
-            .expect("could not buy market funds");
-        client
-            .sell_market_funds("ETH-GBP", 10.11)
-            .expect("Could not sell market funds");
-    }
+    println!("United States Dollar:");
+    let usd = accounts.iter().find(|x| x.currency == "USD").unwrap();
+    println!("{}.  balance: {:?}", usd.currency, usd.balance);
+    println!("{}.available: {:?}", usd.currency, usd.available);
+    println!("{}.     hold: {:?}", usd.currency, usd.hold);
 }
