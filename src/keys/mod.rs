@@ -19,6 +19,15 @@ loop {
 }
 */
 
+/*
+    println!("Great British Pound: ");
+    let gbp = accounts.iter().find(|x| x.currency == "GBP").unwrap();
+    println!("{}.  balance: {:?}", gbp.currency, gbp.balance);
+    println!("{}.available: {:?}", gbp.currency, gbp.available);
+    println!("{}.     hold: {:?}", gbp.currency, gbp.hold);
+    thread::sleep(Duration::from_millis(200));
+    */
+
 pub fn key() -> &'static str {
     static KEY: &str = "c03a48b790134be03121bcefd7e272d9";
     KEY
