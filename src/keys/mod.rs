@@ -4,19 +4,20 @@ by doing this, the main file is looking less like unorganised code,
 */
 
 /* Example code of what a buy and sell market order would consist of in code. */
-    //client.buy_market_funds("ETH-GBP", 10.0).expect("Could not buy market funds");
-    //client.sell_market_funds("ETH-GBP", 10.11).expect("Could not sell market");
+//client.buy_market_funds("ETH-GBP", 10.0).expect("Could not buy market funds");
+//client.sell_market_funds("ETH-GBP", 10.11).expect("Could not sell market");
 
-    /*
-    loop {
-        client
-            .buy_market_funds("ETH-GBP", 10.0)
-            .expect("could not buy market funds");
-        client
-            .sell_market_funds("ETH-GBP", 10.11)
-            .expect("Could not sell market funds");
-    }
-    */
+/*
+loop {
+    client
+        .buy_market_funds("ETH-GBP", 10.0)
+        .expect("could not buy market funds");
+    client
+        .sell_market_funds("ETH-GBP", 10.11)
+        .expect("Could not sell market funds");
+    thread::sleep(Duration::from_millis(200))
+}
+*/
 
 pub fn key() -> &'static str {
     static KEY: &str = "c03a48b790134be03121bcefd7e272d9";
